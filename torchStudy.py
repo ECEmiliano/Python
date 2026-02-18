@@ -6,10 +6,10 @@ from torchvision.transforms import ToTensor
 
 # Download training data from open datasets.
 training_data = datasets.FashionMNIST(
-    root="data",
-    train=True,
-    download=True,
-    transform=ToTensor(),
+    root="data", #Creates/Checks the data folder. Writes the contents of the dataset.
+    train=True, #Checks if the dataset is for training or testing. If True, creates/Checks the training data. If False, creates/Checks the test data.
+    download=True, 
+    transform=ToTensor(), #Converts the PIL Image to a tensor.
 )
 
 # Download test data from open datasets.
@@ -23,26 +23,26 @@ test_data = datasets.FashionMNIST(
 batch_size = 64
 
 # Create data loaders.
-train_dataloader = DataLoader(training_data, batch_size=batch_size)
+train_dataloader = DataLoader(training_data, batch_size=batch_size) #While the dataaset is static, we can use dataloader to utilise the dataset (Create batches, shuffle data etc.)
 test_dataloader = DataLoader(test_data, batch_size=batch_size)
 
 for X, y in test_dataloader:
-    print(f"Shape of X [N, C, H, W]: {X.shape}")
-    print(f"Shape of y: {y.shape} {y.dtype}")
+    print(f"Shape of X [N, C, H, W]: {X.shape}") #N is the batch size, C is the number of channels (1 for grayscale), H and W are the height and width of the images (28x28).
+    print(f"Shape of y: {y.shape} {y.dtype}") #y is a 1D tensor of labels corresponding to the images in X
     break
 
-device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu"
+device = torch.accelerator.current_accelerator().type if torch.accelerator.is_available() else "cpu" #Checks if an accelerator (GPU) is available. If it is, it returns the type of accelerator (e.g., "cuda" for NVIDIA GPUs, "mps" for Apple Silicon). If no accelerator is available, it defaults to "cpu".
 print(f"Using {device} device")
 
 # Define model
-class NeuralNetwork(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
+class NeuralNetwork(nn.Module): 
+    def __init__(self): 
+        super().__init__() #Calls __init__ of the parent class (nn.Module) to properly initialize the model
+        self.flatten = nn.Flatten() #Flattens the input tensor from (N, C, H, W) to (N, C*H*W). In this case, it will flatten the 28x28 images into a 784-dimensional vector. Easier to work with
+        self.linear_relu_stack = nn.Sequential(  
             nn.Linear(28*28, 512),
             nn.ReLU(),
-            nn.Linear(512, 512),
+            nn.Linear(512, 512),        #Im lost 
             nn.ReLU(),
             nn.Linear(512, 10)
         )
@@ -91,14 +91,14 @@ def test(dataloader, model, loss_fn):
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
-epochs = 1
+epochs = 5
 for t in range(epochs):
     print(f"Epoch {t+1}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
     test(test_dataloader, model, loss_fn)
 print("Done!")
 
-classes = [
+classes = [ #The classes in the FashionMNIST dataset
     "T-shirt/top",
     "Trouser",
     "Pullover",
@@ -111,7 +111,7 @@ classes = [
     "Ankle boot",
 ]
 
-model.eval()
+model.eval() #This block is to make the machine guess a singular item
 x, y = test_data[238][0], test_data[238][1]
 #x = x.unsqueeze(0)  Add batch dimension. Works without it because the current images are grayscale (1 channel).
 with torch.no_grad():
