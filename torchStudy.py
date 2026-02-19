@@ -1,4 +1,5 @@
 import torch
+import random
 from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
@@ -23,7 +24,7 @@ test_data = datasets.FashionMNIST(
 batch_size = 64
 
 # Create data loaders.
-train_dataloader = DataLoader(training_data, batch_size=batch_size) #While the dataaset is static, we can use dataloader to utilise the dataset (Create batches, shuffle data etc.)
+train_dataloader = DataLoader(training_data, batch_size=batch_size) #While the dataset is static, we can use dataloader to utilise the dataset (Create batches, shuffle data etc.)
 test_dataloader = DataLoader(test_data, batch_size=batch_size)
 
 for X, y in test_dataloader:
@@ -112,8 +113,9 @@ classes = [ #The classes in the FashionMNIST dataset
 ]
 
 model.eval() #This block is to make the machine guess a singular item
-x, y = test_data[238][0], test_data[238][1]
-#x = x.unsqueeze(0)  Add batch dimension. Works without it because the current images are grayscale (1 channel).
+random_index = random.randint(0, len(test_data) - 1)
+x, y = test_data[random_index][0], test_data[random_index][1] #Randomized test item to see if the model remembers the dataset we feed to it. Running with only one epoch will cause the model to fail on several occasions
+x = x.unsqueeze(0)  #Add batch dimension. Will work without it because the current images are grayscale (1 channel).
 with torch.no_grad():
     x = x.to(device) #We work on the GPU, the data must be transferred to the correct device. Non-necessary for y since we dont compute any mathematical operations with it.
     pred = model(x)
